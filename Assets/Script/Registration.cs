@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 using TMPro;
 public class Registration : MonoBehaviour
 {
@@ -21,17 +22,19 @@ public class Registration : MonoBehaviour
         form.AddField("username", username.text);
         form.AddField("password", password.text);
 
-        WWW www = new WWW("http://localhost/sqlconnect/register.php", form);
-        yield return www;
-        if(www.text=="0")
+        using (var www = UnityWebRequest.Post("http://localhost/sqlconnect/register.php", form))
         {
-            Debug.Log("User created succesfully!");
-            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-        }
-        else
-        {
-            Debug.Log("User creation failed! Error #"+www.text );
-        }
+            yield return www.SendWebRequest();
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("User created succesfully!");
+                UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+            }
+            else
+            {
+                Debug.Log("User creation failed! Error #" + www.result);
+            }
+        }   
     }
 
     public void VerifyInputs()
